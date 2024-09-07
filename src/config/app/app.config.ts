@@ -1,10 +1,13 @@
-import { InstanceValidator, IntValidator, StringValidator } from '@app/common';
+import {
+  InstanceValidator,
+  InstanceValidatorOptional,
+  IntValidator,
+  StringValidator,
+} from '@app/common';
 import { BaseConfig } from './base.config';
 import { CorsConfig } from '../cors';
 import { DatabaseConfig } from '../database';
 import { SwaggerConfig } from '../swagger';
-import { SentryConfig, SlackConfig } from '../monitor';
-import { JwtConfig } from '../jwt';
 
 export class AppConfig extends BaseConfig {
   @StringValidator()
@@ -16,18 +19,9 @@ export class AppConfig extends BaseConfig {
   @InstanceValidator(CorsConfig)
   readonly cors: CorsConfig;
 
-  @InstanceValidator(JwtConfig)
-  readonly jwt: JwtConfig;
-
   @InstanceValidator(DatabaseConfig)
   readonly database: DatabaseConfig;
 
   @InstanceValidator(SwaggerConfig)
   readonly swagger: SwaggerConfig;
-
-  @InstanceValidator(SentryConfig)
-  readonly sentry: SentryConfig;
-
-  @InstanceValidator(SlackConfig)
-  readonly slack: SlackConfig;
 }
