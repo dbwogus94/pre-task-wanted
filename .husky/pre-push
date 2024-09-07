@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# 현재 브랜치를 가져옵니다
+current_branch=$(git symbolic-ref --short HEAD)
+
+# 허용되지 않는 브랜치로의 푸시인 경우 에러를 출력하고 종료합니다
+if [ "$current_branch" = "master" ] || [ "$current_branch" = "main" ]; then
+  echo "푸시를 master 또는 main 브랜치로 직접할 수 없습니다. 대신 pull request를 사용해주세요."
+  exit 1
+fi
+
+# 다른 브랜치로의 푸시는 허용됩니다
+exit 0
