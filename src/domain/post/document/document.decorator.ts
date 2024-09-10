@@ -5,6 +5,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 import { ErrorMessage, SuccessMessage } from '@app/common';
@@ -59,6 +60,9 @@ const decorators: Record<API_DOC_TYPE, Function> = {
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
       }),
+      ApiUnauthorizedResponse({
+        description: ErrorMessage.E401_APP_UNAUTHORIZED,
+      }),
     ),
   deletePost: () =>
     applyDecorators(
@@ -68,6 +72,9 @@ const decorators: Record<API_DOC_TYPE, Function> = {
       }),
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
+      }),
+      ApiUnauthorizedResponse({
+        description: ErrorMessage.E401_APP_UNAUTHORIZED,
       }),
     ),
 };

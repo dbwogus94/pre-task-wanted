@@ -75,6 +75,6 @@ export class PostController {
     @Param('id', ParseIntPipe, ToStringPipe) postId: string,
     @Body() body: DeletePostRequest,
   ): Promise<void> {
-    await this.postService.softDeletePost(postId, body);
+    await this.postService.softDeletePost(postId, body.password);
   }
 }

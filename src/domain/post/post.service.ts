@@ -3,12 +3,12 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import {
   CreatePostRequest,
-  DeletePostRequest,
   GetPostResponse,
   GetPostsQuery,
   GetPostsResponseWithTotalCount,
@@ -23,10 +23,9 @@ export abstract class PostServiceUseCase {
   abstract createPost(body: CreatePostRequest): Promise<void>;
   abstract getPost(postId: string): Promise<GetPostResponse>;
   abstract updatePost(postId: string, body: PutPostRequest): Promise<void>;
-  abstract softDeletePost(
-    postId: string,
-    body: DeletePostRequest,
-  ): Promise<void>;
+
+  /** 삭제되는 게시글, 댓글, 답글 모두 soft-delete 처리한다. */
+  abstract softDeletePost(postId: string, password: string): Promise<void>;
 }
 
 @Injectable()
@@ -95,10 +94,47 @@ export class PostService extends PostServiceUseCase {
   }
 
   async updatePost(postId: string, body: PutPostRequest): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    const post = await this.postRepo.findOneByPK(postId);
+    if (!post) {
+      throw new NotFoundException(ErrorMessage.E404_APP_NOT_FOUND);
+    }
+
+    const { password, ...updateBody } = body;
+    const isMatchedPassword = await post.verifyPassword(password);
+    if (!isMatchedPassword) {
+      throw new UnauthorizedException(ErrorMessage.E401_APP_UNAUTHORIZED);
+    }
+    await this.postRepo.updateOne(postId, updateBody);
   }
 
-  async softDeletePost(postId: string, body: DeletePostRequest): Promise<void> {
-    throw new NotFoundException('미구현 API');
+  async softDeletePost(postId: string, password: string): Promise<void> {
+    const post = await this.postRepo.findOneByPK(postId);
+    if (!post) {
+      throw new NotFoundException(ErrorMessage.E404_APP_NOT_FOUND);
+    }
+
+    const isMatchedPassword = await post.verifyPassword(password);
+    if (!isMatchedPassword) {
+      throw new UnauthorizedException(ErrorMessage.E401_APP_UNAUTHORIZED);
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    const manager = queryRunner.manager;
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const txPostRepo = this.postRepo.createTransactionRepo(manager);
+      // 게시물 삭제
+      await txPostRepo.softDelete(postId);
+      // TODO: 댓글 삭제
+      // TODO: 답글 삭제
+      await queryRunner.commitTransaction();
+      return;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

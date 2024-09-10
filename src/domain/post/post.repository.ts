@@ -15,6 +15,7 @@ type InsertPostBody = Pick<
   PostEntity,
   'title' | 'content' | 'authorName' | 'password'
 >;
+type UpdatePostBody = Pick<PostEntity, 'title' | 'content' | 'authorName'>;
 
 export abstract class PostRepositoryPort extends BaseRepository<PostEntity> {
   abstract findManyWithCount(
@@ -22,6 +23,7 @@ export abstract class PostRepositoryPort extends BaseRepository<PostEntity> {
   ): Promise<[Post[], number]>;
   abstract findOneByPK(postId: string): Promise<Post>;
   abstract insertOne(body: InsertPostBody): Promise<string>;
+  abstract updateOne(postId: string, body: UpdatePostBody): Promise<string>;
   abstract updateOneByProperty(
     postId: string,
     properties: Partial<PostEntity>,
@@ -63,12 +65,17 @@ export class PostRepository extends PostRepositoryPort {
 
   async findOneByPK(postId: string): Promise<Post> {
     const postEntity = await this.findOneBy({ id: postId });
-    return PostEntityMapper.toDomain(postEntity);
+    return postEntity ? PostEntityMapper.toDomain(postEntity) : null;
   }
 
   async insertOne(body: InsertPostBody): Promise<string> {
     const { raw } = await this.insert({ ...body });
     return raw.insertId;
+  }
+
+  async updateOne(postId: string, body: UpdatePostBody): Promise<string> {
+    await this.update(postId, body);
+    return postId;
   }
 
   async updateOneByProperty(
