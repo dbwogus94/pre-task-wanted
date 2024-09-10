@@ -1,36 +1,20 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import {
-  Column,
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-export class BaseEntity {
-  @ApiProperty({ description: '엔티티 uid', type: String })
-  @Expose()
-  @PrimaryGeneratedColumn('uuid')
-  readonly uid: string;
+export abstract class BaseEntity {
+  @PrimaryGeneratedColumn({ type: 'bigint', name: 'id', comment: 'ID' })
+  readonly id: string;
 
-  @ApiProperty({ description: '엔티티 id', type: Number })
-  @Expose()
-  @Column('int', { generated: 'increment', unique: true })
-  readonly id: number;
-
-  @ApiProperty({ description: '생성일', type: Date })
-  @Expose()
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'datetime', comment: '생성일' })
   readonly createdAt: Date;
 
-  @ApiProperty({ description: '수정일', type: Date })
-  @Expose()
-  @UpdateDateColumn({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'datetime', comment: '수정일' })
   readonly updatedAt: Date;
 
-  @ApiHideProperty()
-  @Exclude()
-  @DeleteDateColumn({ type: 'datetime' })
-  deletedAt: Date;
+  @DeleteDateColumn({ type: 'datetime', comment: '삭제일' })
+  deletedAt?: Date | null;
 }
