@@ -1,7 +1,7 @@
-# nestjs 보일러 플레이트 
+# 원티드랩 nodejs 포지션 사전과제
 
 ## 권장 환경
-- node: v18.14.x
+- node: 20.15.x
 - nestjs 버전: v10.x.x
 - @nestjs/cli: v10.1.17
 
@@ -9,18 +9,19 @@
 ```bash
 .
 ├── app.controller.ts
-├── app.module.ts           # app 메인 Module           
 ├── app.service.ts
-├── common                  # '@app/common'로 paths 설정
-├── config                   # '@app/config'로 paths 설정
-├── custom                  # '@app/custom'로 paths 설정
-│   ├── express             # express 관련. EX. middleware 
-│   └── nest                # nestjs 관련. EX. interceptor, provider
-├── domain                  # 모든 API는 domain 모듈 하위 모듈로 구현한다.
+├── app.module.ts           # app 메인 Module           
+├── domain                  # 모든 API는 domain 모듈 하위 모듈로 구현.
 │   └── domain.module.ts
-├── entity                  # '@app/entity'로 paths 설정, typeorm entity 전용
+|
+├── common                  # '@app/common'로 paths 설정, 공통 코드를 관리.
+├── config                  # '@app/config'로 paths 설정, Config 클래스 관리.
+├── custom                  # '@app/custom'로 paths 설정, 공통(전역) 프레임워크 관련 코드 관리.
+│   ├── express             # express 관련. EX. middleware 
+│   └── nest                # nestjs 관련. EX. interceptor, provider, pipe
+├── entity                  # '@app/entity'로 paths 설정, typeorm entity를 관리
 │
-└── main.ts                 # 주 진입점
+└── main.ts                 # nestjs 프로그램 주 진입점
 ```
 
 ## env 파일
@@ -31,44 +32,26 @@ NODE_ENV=local
 ## app
 TZ=Asia/Seoul
 PORT=3000
+# ex) CORS_ORIGIN=http://naver.com,http://map.naver.com,http://localhost:3000 
 CORS_ORIGIN=*
-APP_NAME='API'
-
-JWT_SECRET=jwt-secret
-JWT_EXPIRES_IN=7d
-JWT_ISSUER=Nest-API
-JWT_SUBJECT=user-info
+APP_NAME='Pre-Task-Wanted'
 
 ## TypeORM
 DATABASE_TYPE=postgres
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=postgres
+DATABASE_HOST=
+DATABASE_PORT=
+DATABASE_NAME=
 DATABASE_USER=
 DATABASE_PASSWORD=
-DATABASE_LOG=all
-#DATABASE_LOG=query,info,warn,error
+# ex) DATABASE_LOG=query,info,warn,error
+DATABASE_LOG=all 
 DATABASE_MAX_QUERY_EXECUTION_TIME=10000
-
-## (optional) connection custom setting
-DATABASE_CONNECT_TIMEOUT=60000
-DATABASE_POOL_MIN_SIZE=5
-DATABASE_POOL_MAX_SIZE=10
+DATABASE_CONNECTION_LIMIT=10
 
 ## swagger
-SWAGGER_APIS_TITLE='Nestjs API'
-SWAGGER_APIS_DESCRIPTION='Nestjs API'
-SWAGGER_APIS_VERSION=1.0
-
-## sentry
-SENTRY_DSN=https://
-SENTRY_TRACES_SAMPLE_RATE=0.7
-
-## Slack Server Error
-SLACK_WEB_HOOK_URI_BY_SERVER_ERROR_ALERT=
-SLACK_CHANNEL_NAME_BY_SERVER_ERROR_ALERT=error-alaram
-SLACK_DESCRIPTION_BY_SERVER_ERROR_ALERT=server-error-alaram-channel
-SLACK_VIEWER_URL_BY_SERVER_ERROR_ALERT=https://
+SWAGGER_APIS_TITLE='Pre-Task-Wanted API'
+SWAGGER_APIS_DESCRIPTION='Pre-Task-Wanted API'
+SWAGGER_APIS_VERSION=1.0.0
 
 ```
 
@@ -96,7 +79,7 @@ $ npm run start:dev
 $ npm run start:debug
 ```   
 
-4. 확인
+4. 실행 확인
 - api: [localhost:3000/api](http://localhost:3000/api)
 - swagger: [localhost:3000/docs](http://localhost:3000/docs)
 - swagger-json: [localhost:3000/docs-json](http://localhost:3000/docs-json)

@@ -3,7 +3,6 @@ export * from './database';
 export * from './decorator';
 export * from './message';
 export * from './swagger';
-export * from './template';
 export * from './type';
 export * from './util';
 export * from './logger';
