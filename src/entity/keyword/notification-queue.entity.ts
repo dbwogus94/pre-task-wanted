@@ -8,7 +8,7 @@ import { DomainType, QueueState } from '../enum';
 @Entity('notification_queue')
 @Unique(['domainId', 'domainTypeCode'])
 export class NotificationQueueEntity extends BaseEntity {
-  @Column('bigint', { comment: 'domain(게시물, 댓글, 대댓글) id' })
+  @Column('bigint', { comment: 'domain(게시물, 댓글, 답글) id' })
   domainId: string;
 
   /* ============= 컬럼 연관관계 ============= */

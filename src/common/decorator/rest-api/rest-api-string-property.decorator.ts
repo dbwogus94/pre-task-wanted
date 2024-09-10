@@ -11,7 +11,7 @@ type RestApiStringPropertyOptions = RestApiDecoratorDefaultOptions & {
 };
 
 const toApiPropertyOptions = (options: RestApiStringPropertyOptions) => ({
-  type: Number,
+  type: String,
   description: options.description,
   isArray: options.isArray,
   maxLength: options.maxLength,

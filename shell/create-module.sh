@@ -77,7 +77,7 @@ domain_mapper_elements=(
   "export class ${domain_mapper_class}EntityMapper {"
   "  static toDomain(entity: ${domain_mapper_class}Entity): $domain_mapper_class {"
   "    return new ${domain_mapper_class}({ ...entity }) //"
-  "      .setBase(entity.uid, entity.id, entity.createdAt, entity.updatedAt);"
+  "      .setBase(entity.id, entity.createdAt, entity.updatedAt);"
   "  }"
   "}"
 )

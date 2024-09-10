@@ -20,7 +20,7 @@ export class InsertBaseCodeData1725938621745 implements MigrationInterface {
         VALUES
             ('Post', '게시물', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
             ('Comment', '댓글', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
-            ('Reply', '대댓글', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null)
+            ('Reply', '답글', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null)
         ;
         `);
   }

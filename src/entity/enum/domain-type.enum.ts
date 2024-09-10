@@ -7,5 +7,5 @@ export enum DomainType {
 export enum DomainTypeName {
   POST = '댓글',
   COMMENT = '게시물',
-  REPLY = '대댓글',
+  REPLY = '답글',
 }
