@@ -10,6 +10,7 @@ import {
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PostRepositoryPort } from './post.repository';
+import { ErrorMessage, Util } from '@app/common';
 
 export abstract class PostServiceUseCase {
   abstract getPosts(
@@ -41,11 +42,38 @@ export class PostService extends PostServiceUseCase {
   }
 
   async createPost(body: CreatePostRequest): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    const queryRunner = this.dataSource.createQueryRunner();
+    const manager = queryRunner.manager;
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const txPostRepo = this.postRepo.createTransactionRepo(manager);
+      const { password, ...other } = body;
+      const newPostId = await txPostRepo.insertOne({ ...other, password: '' });
+      const newPost = await txPostRepo.findOneByPK(newPostId);
+
+      // 비밀번호 해싱 수행
+      const hashPassword = await newPost.hashPassword(password);
+      await txPostRepo.updateOneByProperty(newPostId, {
+        password: hashPassword,
+      });
+
+      await queryRunner.commitTransaction();
+      return;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async getPost(postId: string): Promise<GetPostResponse> {
-    throw new NotFoundException('미구현 API');
+    const post = await this.postRepo.findOneByPK(postId);
+    if (!post) {
+      throw new NotFoundException(ErrorMessage.E404_APP_NOT_FOUND);
+    }
+    return Util.toInstance(GetPostResponse, post);
   }
 
   async updatePost(postId: string, body: PutPostRequest): Promise<void> {
