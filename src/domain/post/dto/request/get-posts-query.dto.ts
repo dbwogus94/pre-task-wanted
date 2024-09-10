@@ -7,7 +7,7 @@ export class GetPostsQuery extends OffsetPagination {
     maxLength: 255,
     minLength: 1,
   })
-  title: string;
+  title?: string | null;
 
   @RestApiStringPropertyOptional({
     description: '작성자로 검색',
@@ -15,5 +15,5 @@ export class GetPostsQuery extends OffsetPagination {
     maxLength: 100,
     minLength: 1,
   })
-  authorName: string;
+  authorName?: string | null;
 }

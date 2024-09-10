@@ -7,27 +7,30 @@ import {
 } from '@nestjs/swagger';
 
 import { ErrorMessage, SuccessMessage } from '@app/common';
-import { PostController } from '../post.controller';
-import { GetPostResponse, GetPostsResponseWithTotalCount } from '../dto';
+import { CommentController } from '../comment.controller';
+import {
+  GetCommentsResponseWithTotalCount,
+  GetRepliesResponseWithTotalCount,
+} from '../dto';
 
-type API_DOC_TYPE = keyof PostController;
+type API_DOC_TYPE = keyof CommentController;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 const decorators: Record<API_DOC_TYPE, Function> = {
-  getPosts: () =>
+  getComments: () =>
     applyDecorators(
-      ApiOperation({ summary: '게시물 리스트 조회' }),
+      ApiOperation({ summary: '댓글 리스트 조회' }),
       ApiOkResponse({
         description: SuccessMessage.S200_APP_OK,
-        type: GetPostsResponseWithTotalCount,
+        type: GetCommentsResponseWithTotalCount,
       }),
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
       }),
     ),
-  createPost: () =>
+  createComment: () =>
     applyDecorators(
-      ApiOperation({ summary: '게시물 생성' }),
+      ApiOperation({ summary: '댓글 생성' }),
       ApiNoContentResponse({
         description: SuccessMessage.S204_APP_NO_CONTENT,
       }),
@@ -35,30 +38,20 @@ const decorators: Record<API_DOC_TYPE, Function> = {
         description: ErrorMessage.E400_APP_BAD_REQUEST,
       }),
     ),
-  getPost: () =>
+  getReplies: () =>
     applyDecorators(
-      ApiOperation({ summary: '게시물 조회' }),
+      ApiOperation({ summary: '대댓글 리스트 조회' }),
       ApiOkResponse({
         description: SuccessMessage.S200_APP_OK,
-        type: GetPostResponse,
+        type: GetRepliesResponseWithTotalCount,
       }),
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
       }),
     ),
-  putPost: () =>
+  createReply: () =>
     applyDecorators(
-      ApiOperation({ summary: '게시물 수정' }),
-      ApiNoContentResponse({
-        description: SuccessMessage.S204_APP_NO_CONTENT,
-      }),
-      ApiBadRequestResponse({
-        description: ErrorMessage.E400_APP_BAD_REQUEST,
-      }),
-    ),
-  deletePost: () =>
-    applyDecorators(
-      ApiOperation({ summary: '게시물 삭제' }),
+      ApiOperation({ summary: '대댓글 생성' }),
       ApiNoContentResponse({
         description: SuccessMessage.S204_APP_NO_CONTENT,
       }),
