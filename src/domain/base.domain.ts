@@ -1,6 +1,5 @@
 export interface BaseDomainProps {
-  uid: string;
-  id: number;
+  id: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -8,8 +7,7 @@ export interface BaseDomainProps {
 export abstract class BaseDomain<PROPS> implements BaseDomainProps {
   protected props: PROPS;
 
-  #uid: string;
-  #id: number;
+  #id: string;
   #createdAt: Date;
   #updatedAt: Date;
 
@@ -17,11 +15,7 @@ export abstract class BaseDomain<PROPS> implements BaseDomainProps {
     this.props = props;
   }
 
-  get uid(): string {
-    return this.#uid;
-  }
-
-  get id(): number {
+  get id(): string {
     return this.#id;
   }
 
@@ -33,8 +27,7 @@ export abstract class BaseDomain<PROPS> implements BaseDomainProps {
     return this.#updatedAt;
   }
 
-  setBase(uid: string, id: number, createdAt: Date, updatedAt: Date) {
-    this.#uid = uid;
+  setBase(id: string, createdAt: Date, updatedAt: Date) {
     this.#id = id;
     this.#createdAt = createdAt;
     this.#updatedAt = updatedAt;
