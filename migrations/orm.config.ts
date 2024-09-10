@@ -14,7 +14,4 @@ export default new DataSource({
   entities: [`${__dirname}/../src/entity/**/*.entity{.ts,.js}`],
   migrations: [`${__dirname}/**/local/*{.ts,.js}`],
   migrationsTableName: 'migrations',
-  extra: {
-    timezone: 'Asia/Seoul',
-  },
 });
