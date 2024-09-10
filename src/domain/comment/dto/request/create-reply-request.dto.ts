@@ -5,14 +5,14 @@ export class CreateReplyRequest
   implements Pick<CommentEntity, 'content' | 'authorName'>
 {
   @RestApiStringProperty({
-    description: '대댓글 내용',
-    default: '대댓글 내용',
+    description: '답글 내용',
+    default: '답글 내용',
   })
   content: string;
 
   @RestApiStringProperty({
-    description: '대댓글 작성자',
-    default: '대댓글 작성자',
+    description: '답글 작성자',
+    default: '답글 작성자',
   })
   authorName: string;
 }

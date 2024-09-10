@@ -40,7 +40,7 @@ const decorators: Record<API_DOC_TYPE, Function> = {
     ),
   getReplies: () =>
     applyDecorators(
-      ApiOperation({ summary: '대댓글 리스트 조회' }),
+      ApiOperation({ summary: '답글 리스트 조회' }),
       ApiOkResponse({
         description: SuccessMessage.S200_APP_OK,
         type: GetRepliesResponseWithTotalCount,
@@ -51,7 +51,7 @@ const decorators: Record<API_DOC_TYPE, Function> = {
     ),
   createReply: () =>
     applyDecorators(
-      ApiOperation({ summary: '대댓글 생성' }),
+      ApiOperation({ summary: '답글 생성' }),
       ApiNoContentResponse({
         description: SuccessMessage.S204_APP_NO_CONTENT,
       }),

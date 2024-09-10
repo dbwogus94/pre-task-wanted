@@ -24,7 +24,7 @@ export class GetCommentsResponse
   authorName: string;
 
   @RestApiBooleanProperty({
-    description: '댓글에 대댓글 존재 유무',
+    description: '댓글에 답글 존재 유무',
     default: false,
   })
   isChild: number;

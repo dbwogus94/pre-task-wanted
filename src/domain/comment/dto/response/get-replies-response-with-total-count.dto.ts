@@ -11,19 +11,19 @@ export class GetRepliesResponse
   implements Omit<CommentEntity, 'deletedAt' | 'depth' | 'isChild' | 'post'>
 {
   @RestApiStringProperty({
-    description: '댓글 내용',
-    default: '댓글 내용',
+    description: '답글 내용',
+    default: '답글 내용',
   })
   content: string;
 
   @RestApiStringProperty({
-    description: '댓글 작성자',
-    default: '댓글 작성자',
+    description: '답글 작성자',
+    default: '답글 작성자',
   })
   authorName: string;
 
   @RestApiStringProperty({
-    description: '댓글의 부모 ID',
+    description: '답글의 부모 ID',
     default: '1',
   })
   parentId: string;
@@ -31,7 +31,7 @@ export class GetRepliesResponse
 
 export class GetRepliesResponseWithTotalCount extends WithTotolCountResponse {
   @RestApiInstanceProperty(GetRepliesResponse, {
-    description: '대댓글 리스트',
+    description: '답글 리스트',
     isArray: true,
     arrayMinSize: 0,
   })
