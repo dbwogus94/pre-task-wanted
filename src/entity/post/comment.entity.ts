@@ -9,9 +9,6 @@ import { PostEntity } from './post.entity';
   parser: 'ngram',
 })
 export class CommentEntity extends BaseEntity {
-  @Column('bigint', { comment: '게시물 id' })
-  postId: string;
-
   @Column('text', { comment: '댓글 내용' })
   content: string;
 
