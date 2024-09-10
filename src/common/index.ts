@@ -6,3 +6,4 @@ export * from './swagger';
 export * from './type';
 export * from './util';
 export * from './logger';
+export * from './class';
