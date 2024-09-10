@@ -14,19 +14,19 @@ interface Util {
    * @param plain
    * @param options
    */
-  toInstance<T, V>(
+  toInstance<T, V extends keyof T>(
     cls: ClassConstructor<T>,
-    plain: V[],
+    plain: { [P in V]: T[P] }[],
     options?: ClassTransformOptions,
   ): T[];
-  toInstance<T, V>(
+  toInstance<T, V extends keyof T>(
     cls: ClassConstructor<T>,
-    plain: V,
+    plain: { [P in V]: T[P] },
     options?: ClassTransformOptions,
   ): T;
-  toInstance<T, V>(
+  toInstance<T, V extends keyof T>(
     cls: ClassConstructor<T>,
-    plain: V | V[],
+    plain: { [P in V]: T[P] } | { [P in V]: T[P] }[],
     options?: ClassTransformOptions,
   ): T | T[] | undefined;
 

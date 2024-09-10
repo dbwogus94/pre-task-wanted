@@ -6,7 +6,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -25,25 +24,28 @@ import {
   GetPostsResponseWithTotalCount,
   PutPostRequest,
 } from './dto';
+import { PostServiceUseCase } from './post.service';
 
 @ApiControllerDocument('posts API')
 @Controller('/posts')
 @UseInterceptors(ClassSerializerInterceptor)
 export class PostController {
+  constructor(private readonly postService: PostServiceUseCase) {}
+
   @DocumentHelper('getPosts')
   @Get('/')
   @HttpCode(200)
   async getPosts(
     @Query() query: GetPostsQuery,
   ): Promise<GetPostsResponseWithTotalCount> {
-    throw new NotFoundException('미구현 API');
+    return await this.postService.getPosts(query);
   }
 
   @DocumentHelper('createPost')
   @Post('/')
   @HttpCode(204)
   async createPost(@Body() body: CreatePostRequest): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    await this.postService.createPost(body);
   }
 
   @DocumentHelper('getPost')
@@ -52,7 +54,7 @@ export class PostController {
   async getPost(
     @Param('id', ParseIntPipe, ToStringPipe) postId: string,
   ): Promise<GetPostResponse> {
-    throw new NotFoundException('미구현 API');
+    return await this.postService.getPost(postId);
   }
 
   @DocumentHelper('putPost')
@@ -62,7 +64,7 @@ export class PostController {
     @Param('id', ParseIntPipe, ToStringPipe) postId: string,
     @Body() body: PutPostRequest,
   ): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    await this.postService.updatePost(postId, body);
   }
 
   // TODO: HTTP DELETE method에 body를 사용하는 것은 비표준이기 떄문에 이후 다른 방식으로 변경이 필요하다.
@@ -73,6 +75,6 @@ export class PostController {
     @Param('id', ParseIntPipe, ToStringPipe) postId: string,
     @Body() body: DeletePostRequest,
   ): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    await this.postService.softDeletePost(postId, body.password);
   }
 }

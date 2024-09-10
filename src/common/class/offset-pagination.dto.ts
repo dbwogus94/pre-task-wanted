@@ -15,4 +15,12 @@ export class OffsetPagination {
     max: 100,
   })
   readonly pageSize: number = 10;
+
+  get limit(): number {
+    return this.pageSize;
+  }
+
+  get offset(): number {
+    return (this.page - 1) * this.pageSize;
+  }
 }
