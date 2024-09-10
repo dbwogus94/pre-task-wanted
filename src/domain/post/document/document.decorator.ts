@@ -1,6 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -23,6 +24,9 @@ const decorators: Record<API_DOC_TYPE, Function> = {
       }),
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
+      }),
+      ApiConflictResponse({
+        description: ErrorMessage.E409_POST_TITLE_AND_AUTHOR_CONFLICT,
       }),
     ),
   createPost: () =>

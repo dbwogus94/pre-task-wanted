@@ -1,4 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ErrorMessage, Util } from '@app/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import {
   CreatePostRequest,
   DeletePostRequest,
@@ -7,10 +14,7 @@ import {
   GetPostsResponseWithTotalCount,
   PutPostRequest,
 } from './dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 import { PostRepositoryPort } from './post.repository';
-import { ErrorMessage, Util } from '@app/common';
 
 export abstract class PostServiceUseCase {
   abstract getPosts(
@@ -38,7 +42,21 @@ export class PostService extends PostServiceUseCase {
   async getPosts(
     query: GetPostsQuery,
   ): Promise<GetPostsResponseWithTotalCount> {
-    throw new NotFoundException('미구현 API');
+    const { title, authorName, limit, offset } = query;
+    if (title && authorName) {
+      throw new ConflictException(
+        ErrorMessage.E409_POST_TITLE_AND_AUTHOR_CONFLICT,
+      );
+    }
+
+    const [results, totalCount] = await this.postRepo.findManyWithCount({
+      where: { title, authorName },
+      pagination: { limit, offset },
+    });
+    return Util.toInstance(GetPostsResponseWithTotalCount, {
+      totalCount,
+      results,
+    });
   }
 
   async createPost(body: CreatePostRequest): Promise<void> {

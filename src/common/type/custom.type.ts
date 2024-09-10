@@ -8,3 +8,5 @@ export type UserInfo = {
   jwt: string;
 };
 export type UserRequest = Request & { user: UserInfo };
+
+export type FindManyPagination = { limit: number; offset: number };
