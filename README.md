@@ -56,36 +56,37 @@ SWAGGER_APIS_VERSION=1.0.0
 ```
 
 ## 프로젝트 실행 방법
-1. npm 모듈 설치 
+
+#### 1. npm 모듈 설치 
 ```bash
-# package.json 기준으로 설치
+## package.json 기준으로 설치
 $ npm install
 
-# package-lock.json 기준으로 설치
+## package-lock.json 기준으로 설치
 $ npm ci
 ```
 
-2. 개발환경에 사용할 env 파일 생성 및 설정 값 추가
+#### 2. 개발환경 env 파일 생성 및 설정 값 추가
 ```bash
 $ cp .env.sample ./env/local.env
 ```
 
-3. 개발 환경으로 실행
+#### 3. 테이블 생성 및 초기 데이터 추가
 ```bash
-# watch 모드로 실행
+## typeorm migrate 파일에 있는 query를 일괄 실행 
+$ npm run db:migrate:up
+```
+
+#### 4. 개발 환경으로 실행
+```bash
+## watch 모드로 실행
 $ npm run start:dev
 
-# 디버그 모드로 실행
+## 디버그 모드로 실행
 $ npm run start:debug
 ```   
 
-4. 실행 확인
+#### 5. 실행 확인
 - api: [localhost:3000/api](http://localhost:3000/api)
 - swagger: [localhost:3000/docs](http://localhost:3000/docs)
 - swagger-json: [localhost:3000/docs-json](http://localhost:3000/docs-json)
-
-5. (optional) husky 설정
-```bash
-# husky 초기화
-npm run prepare 
-```
