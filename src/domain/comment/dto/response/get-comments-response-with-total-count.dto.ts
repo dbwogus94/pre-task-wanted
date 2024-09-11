@@ -9,7 +9,11 @@ import { CommentEntity } from '@app/entity';
 
 export class GetCommentsResponse
   extends BaseResponse
-  implements Omit<CommentEntity, 'deletedAt' | 'parentId' | 'depth' | 'post'>
+  implements
+    Omit<
+      CommentEntity,
+      'deletedAt' | 'parentId' | 'depth' | 'post' | 'isChild'
+    >
 {
   @RestApiStringProperty({
     description: '댓글 내용',
@@ -27,7 +31,7 @@ export class GetCommentsResponse
     description: '댓글에 답글 존재 유무',
     default: false,
   })
-  isChild: number;
+  isChild: boolean;
 }
 
 export class GetCommentsResponseWithTotalCount extends WithTotolCountResponse {
