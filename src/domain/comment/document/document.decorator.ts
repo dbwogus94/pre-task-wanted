@@ -2,6 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
@@ -37,6 +38,9 @@ const decorators: Record<API_DOC_TYPE, Function> = {
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
       }),
+      ApiNotFoundResponse({
+        description: ErrorMessage.E404_COMMENT_CREATE_COMMENT_NOT_FOUND_POST,
+      }),
     ),
   getReplies: () =>
     applyDecorators(
@@ -48,6 +52,9 @@ const decorators: Record<API_DOC_TYPE, Function> = {
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
       }),
+      ApiNotFoundResponse({
+        description: ErrorMessage.E404_COMMENT_GET_REPLIES_NOT_FOUND_COMMENT,
+      }),
     ),
   createReply: () =>
     applyDecorators(
@@ -57,6 +64,9 @@ const decorators: Record<API_DOC_TYPE, Function> = {
       }),
       ApiBadRequestResponse({
         description: ErrorMessage.E400_APP_BAD_REQUEST,
+      }),
+      ApiNotFoundResponse({
+        description: ErrorMessage.E404_COMMENT_CREATE_REPLY_NOT_FOUND_COMMENT,
       }),
     ),
 };
