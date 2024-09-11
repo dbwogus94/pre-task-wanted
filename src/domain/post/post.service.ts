@@ -15,6 +15,7 @@ import {
   PutPostRequest,
 } from './dto';
 import { PostRepositoryPort } from './post.repository';
+import { CommentRepositoryPort } from '../comment/comment.repository';
 
 export abstract class PostServiceUseCase {
   /**
@@ -53,6 +54,7 @@ export class PostService extends PostServiceUseCase {
     @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly postRepo: PostRepositoryPort,
+    private readonly commentRepo: CommentRepositoryPort,
   ) {
     super();
   }
@@ -143,10 +145,11 @@ export class PostService extends PostServiceUseCase {
     await queryRunner.startTransaction();
     try {
       const txPostRepo = this.postRepo.createTransactionRepo(manager);
-      // 게시물 삭제
+      const txCommentRepo = this.commentRepo.createTransactionRepo(manager);
+
       await txPostRepo.softDelete(postId);
-      // TODO: 댓글 삭제
-      // TODO: 답글 삭제
+      await txCommentRepo.softDeleteByPostIdWithChilds(postId);
+
       await queryRunner.commitTransaction();
       return;
     } catch (error) {

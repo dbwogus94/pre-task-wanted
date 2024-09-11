@@ -26,6 +26,8 @@ export abstract class CommentRepositoryPort extends BaseRepository<CommentEntity
     commentId: string,
     properties: Partial<CommentEntity>,
   ): Promise<string>;
+
+  abstract softDeleteByPostIdWithChilds(postId: string): Promise<void>;
 }
 
 export class CommentRepository extends CommentRepositoryPort {
@@ -73,5 +75,12 @@ export class CommentRepository extends CommentRepositoryPort {
   ): Promise<string> {
     await this.update(commentId, { ...properties });
     return commentId;
+  }
+
+  async softDeleteByPostIdWithChilds(postId: string): Promise<void> {
+    await this.createQueryBuilder()
+      .softDelete()
+      .where('postId = :postId', { postId })
+      .execute();
   }
 }
