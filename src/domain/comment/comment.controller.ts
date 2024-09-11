@@ -1,19 +1,19 @@
+import { ApiControllerDocument } from '@app/common';
+import { ToStringPipe } from '@app/custom';
 import {
   Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
   Query,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiControllerDocument } from '@app/common';
+import { CommentServiceUseCase } from './comment.service';
 import { DocumentHelper } from './document';
-import { ToStringPipe } from '@app/custom';
 import {
   CreateCommentRequest,
   CreateReplyRequest,
@@ -27,20 +27,22 @@ import {
 @Controller('comment')
 @UseInterceptors(ClassSerializerInterceptor)
 export class CommentController {
+  constructor(private readonly commentService: CommentServiceUseCase) {}
+
   @DocumentHelper('getComments')
   @Get('/')
   @HttpCode(200)
   async getComments(
     @Query() query: GetCommentsQuery,
   ): Promise<GetCommentsResponseWithTotalCount> {
-    throw new NotFoundException('미구현 API');
+    return await this.commentService.getComments(query);
   }
 
   @DocumentHelper('createComment')
   @Post('/')
   @HttpCode(204)
   async createComment(@Body() body: CreateCommentRequest): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    await this.commentService.createComment(body);
   }
 
   @DocumentHelper('getReplies')
@@ -50,7 +52,7 @@ export class CommentController {
     @Param('id', ParseIntPipe, ToStringPipe) commentId: string,
     @Query() query: GetRepliesQuery,
   ): Promise<GetRepliesResponseWithTotalCount> {
-    throw new NotFoundException('미구현 API');
+    return await this.commentService.getReplies(commentId, query);
   }
 
   @DocumentHelper('createReply')
@@ -60,6 +62,6 @@ export class CommentController {
     @Param('id', ParseIntPipe, ToStringPipe) commentId: string,
     @Body() body: CreateReplyRequest,
   ): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    await this.commentService.createReply(commentId, body);
   }
 }

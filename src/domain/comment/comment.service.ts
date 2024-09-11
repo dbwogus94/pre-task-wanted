@@ -1,4 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+
+import {
+  CreateCommentRequest,
+  CreateReplyRequest,
+  GetCommentsQuery,
+  GetCommentsResponseWithTotalCount,
+  GetRepliesQuery,
+  GetRepliesResponseWithTotalCount,
+} from './dto';
+
+export abstract class CommentServiceUseCase {
+  abstract getComments(
+    query: GetCommentsQuery,
+  ): Promise<GetCommentsResponseWithTotalCount>;
+  abstract createComment(body: CreateCommentRequest): Promise<void>;
+
+  abstract getReplies(
+    commentId: string,
+    query: GetRepliesQuery,
+  ): Promise<GetRepliesResponseWithTotalCount>;
+  abstract createReply(
+    commentId: string,
+    body: CreateReplyRequest,
+  ): Promise<void>;
+}
 
 @Injectable()
-export class CommentService {}
+export class CommentService extends CommentServiceUseCase {
+  constructor() {
+    super();
+  }
+
+  async getComments(
+    query: GetCommentsQuery,
+  ): Promise<GetCommentsResponseWithTotalCount> {
+    throw new NotFoundException('미구현 API');
+  }
+
+  async createComment(body: CreateCommentRequest): Promise<void> {
+    throw new NotFoundException('미구현 API');
+  }
+
+  async getReplies(
+    commentId: string,
+    query: GetRepliesQuery,
+  ): Promise<GetRepliesResponseWithTotalCount> {
+    throw new NotFoundException('미구현 API');
+  }
+
+  async createReply(
+    commentId: string,
+    body: CreateReplyRequest,
+  ): Promise<void> {
+    throw new NotFoundException('미구현 API');
+  }
+}
