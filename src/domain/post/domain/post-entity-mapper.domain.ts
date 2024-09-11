@@ -9,12 +9,7 @@ export class PostEntityMapper {
       return entity.map((e) => this.toDomain(e));
     }
 
-    // Note: DB와 스키마 차이 보정
-    const { isComment, ...otherPost } = entity;
-    return new Post({
-      ...otherPost,
-      isComment: !!isComment,
-    }) //
+    return new Post({ ...entity }) //
       .setBase(entity.id, entity.createdAt, entity.updatedAt);
   }
 }

@@ -25,9 +25,6 @@ export class PostEntity extends BaseEntity {
   @Column('varchar', { length: 255, comment: '비밀번호' })
   password: string;
 
-  @Column('tinyint', { comment: '댓글 존재 유무', default: 0 })
-  isComment: number;
-
   /* ============= 연관관계 ============= */
   @OneToMany(() => CommentEntity, (comment) => comment.post)
   comments: CommentEntity[];

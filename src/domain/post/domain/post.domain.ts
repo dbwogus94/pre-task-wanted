@@ -3,10 +3,7 @@ import { PostEntity } from '@app/entity';
 import * as argon2 from 'argon2';
 
 export interface PostProps
-  extends Pick<PostEntity, 'title' | 'content' | 'authorName' | 'password'> {
-  /** Domain 객체에서 boolean으로 사용한다.  */
-  isComment: boolean;
-}
+  extends Pick<PostEntity, 'title' | 'content' | 'authorName' | 'password'> {}
 
 export class Post extends BaseDomain<PostProps> {
   constructor(readonly props: PostProps) {
@@ -27,10 +24,6 @@ export class Post extends BaseDomain<PostProps> {
 
   get password(): string {
     return this.props.password;
-  }
-
-  get isComment(): boolean {
-    return this.props.isComment;
   }
 
   /**
