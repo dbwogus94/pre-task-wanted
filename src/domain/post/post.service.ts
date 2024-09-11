@@ -1,4 +1,3 @@
-import { ErrorMessage, Util } from '@app/common';
 import {
   ConflictException,
   Injectable,
@@ -6,7 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DataSource } from 'typeorm';
+
+import { ErrorMessage, Util } from '@app/common';
+import { DomainType } from '@app/entity';
 import {
   CreatePostRequest,
   GetPostResponse,
@@ -16,6 +19,7 @@ import {
 } from './dto';
 import { PostRepositoryPort } from './post.repository';
 import { CommentRepositoryPort } from '../comment/comment.repository';
+import { CreateDomainEventFactory } from '../keyword/event-listener';
 
 export abstract class PostServiceUseCase {
   /**
@@ -55,6 +59,7 @@ export class PostService extends PostServiceUseCase {
     private readonly dataSource: DataSource,
     private readonly postRepo: PostRepositoryPort,
     private readonly commentRepo: CommentRepositoryPort,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -96,8 +101,13 @@ export class PostService extends PostServiceUseCase {
         password: hashPassword,
       });
 
+      // 게시물 생성 이벤트 발행
+      this.eventEmitter.emit(
+        'create.post',
+        CreateDomainEventFactory.createEventPayload(DomainType.POST, newPostId),
+      );
+
       await queryRunner.commitTransaction();
-      return;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

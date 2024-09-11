@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DataSource } from 'typeorm';
 
 import {
@@ -8,6 +9,7 @@ import {
   TRUE_NUMBER,
   Util,
 } from '@app/common';
+import { DomainType } from '@app/entity';
 import { PostRepositoryPort } from '../post/post.repository';
 import { CommentRepositoryPort } from './comment.repository';
 import {
@@ -18,6 +20,7 @@ import {
   GetRepliesQuery,
   GetRepliesResponseWithTotalCount,
 } from './dto';
+import { CreateDomainEventFactory } from '../keyword/event-listener';
 
 export abstract class CommentServiceUseCase {
   abstract getComments(
@@ -42,6 +45,7 @@ export class CommentService extends CommentServiceUseCase {
     private readonly dataSource: DataSource,
     private readonly commentRepo: CommentRepositoryPort,
     private readonly postRepo: PostRepositoryPort,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -68,7 +72,35 @@ export class CommentService extends CommentServiceUseCase {
         ErrorMessage.E404_COMMENT_CREATE_COMMENT_NOT_FOUND_POST,
       );
     }
-    await this.commentRepo.insertOne({ ...body, parentId: COMMENT_PARENT_ID });
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    const manager = queryRunner.manager;
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const txCommentRepo = this.commentRepo.createTransactionRepo(manager);
+      const newCommentId = await txCommentRepo.insertOne({
+        ...body,
+        parentId: COMMENT_PARENT_ID,
+      });
+
+      // 댓글 생성 이벤트 발행
+      this.eventEmitter.emit(
+        'create.comment',
+        CreateDomainEventFactory.createEventPayload(
+          DomainType.COMMENT,
+          newCommentId,
+        ),
+      );
+
+      await queryRunner.commitTransaction();
+      return;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async getReplies(
@@ -112,7 +144,7 @@ export class CommentService extends CommentServiceUseCase {
     try {
       const txCommentRepo = this.commentRepo.createTransactionRepo(manager);
       // 답글 생성, parentId = 댓글 ID
-      await txCommentRepo.insertOne({
+      const newReplyId = await txCommentRepo.insertOne({
         ...body,
         postId: comment.postId,
         parentId: comment.id,
@@ -121,6 +153,15 @@ export class CommentService extends CommentServiceUseCase {
       await txCommentRepo.updateOneByProperty(commentId, {
         isChild: TRUE_NUMBER,
       });
+
+      // 답글 생성 이벤트 발행
+      this.eventEmitter.emit(
+        'create.reply',
+        CreateDomainEventFactory.createEventPayload(
+          DomainType.REPLY,
+          newReplyId,
+        ),
+      );
 
       await queryRunner.commitTransaction();
       return;

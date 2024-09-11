@@ -8,6 +8,7 @@ import { DevelopmentGlobalProviders, GlobalModule } from '@app/custom';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DomainModule } from './domain';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 const config = EnvUtil.isProd() ? ProdConfig : LocalConfig;
 
@@ -19,6 +20,7 @@ const config = EnvUtil.isProd() ? ProdConfig : LocalConfig;
       load: [() => AppConfig.validate(config)],
     }),
     TypeOrmModule.forRootAsync(getTypeOrmModuleAsyncOptions()),
+    EventEmitterModule.forRoot(),
     GlobalModule,
     DomainModule,
   ],
