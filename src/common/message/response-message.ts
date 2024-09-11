@@ -20,8 +20,12 @@ const PostErrorMessage = {
 };
 
 const CommentErrorMessage = {
-  E404_COMMENT_POST_NOT_FOUND: '댓글 작성을 요청한 게시물이 존재하지 않습니다.',
-  E404_COMMENT_NOT_FOUND: '답글 작성을 요청한 댓글이 존재하지 않습니다.',
+  E404_COMMENT_CREATE_COMMENT_NOT_FOUND_POST:
+    '댓글 작성을 요청한 게시물이 존재하지 않습니다.',
+  E404_COMMENT_GET_REPLIES_NOT_FOUND_COMMENT:
+    '댓글이 존재하지 않아 답글을 조회할 수 없습니다.',
+  E404_COMMENT_CREATE_REPLY_NOT_FOUND_COMMENT:
+    '답글 작성을 요청한 댓글이 존재하지 않습니다.',
 };
 
 // E${statusCode}_${도메인}_${변수명}

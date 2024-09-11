@@ -10,13 +10,22 @@ type FindManyOptions = {
   pagination?: FindManyPagination;
 };
 
-type InsertCommentBody = Pick<Comment, 'content' | 'authorName'>;
+type InsertCommentBody = Pick<
+  Comment,
+  'content' | 'authorName' | 'parentId' | 'postId'
+>;
 
 export abstract class CommentRepositoryPort extends BaseRepository<CommentEntity> {
   abstract findManyWithCount(
     options?: FindManyOptions,
   ): Promise<[Comment[], number]>;
-  abstract insertOne(postId: string, body: InsertCommentBody): Promise<string>;
+  abstract findOneByPK(commentId: string): Promise<Comment>;
+
+  abstract insertOne(body: InsertCommentBody): Promise<string>;
+  abstract updateOneByProperty(
+    commentId: string,
+    properties: Partial<CommentEntity>,
+  ): Promise<string>;
 }
 
 export class CommentRepository extends CommentRepositoryPort {
@@ -48,8 +57,21 @@ export class CommentRepository extends CommentRepositoryPort {
     return [CommentEntityMapper.toDomain(commentEntities), count];
   }
 
-  async insertOne(postId: string, body: InsertCommentBody): Promise<string> {
-    const { raw } = await this.insert({ ...body, post: { id: postId } });
+  async findOneByPK(commentId: string): Promise<Comment> {
+    const commentEntity = await this.findOneBy({ id: commentId });
+    return commentEntity ? CommentEntityMapper.toDomain(commentEntity) : null;
+  }
+
+  async insertOne(body: InsertCommentBody): Promise<string> {
+    const { raw } = await this.insert({ ...body });
     return raw.insertId;
+  }
+
+  async updateOneByProperty(
+    commentId: string,
+    properties: Partial<CommentEntity>,
+  ): Promise<string> {
+    await this.update(commentId, { ...properties });
+    return commentId;
   }
 }

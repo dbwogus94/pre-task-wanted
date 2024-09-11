@@ -1,6 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
-import { COMMENT_PARENT_ID, ErrorMessage, Util } from '@app/common';
+import {
+  COMMENT_PARENT_ID,
+  ErrorMessage,
+  TRUE_NUMBER,
+  Util,
+} from '@app/common';
 import { PostRepositoryPort } from '../post/post.repository';
 import { CommentRepositoryPort } from './comment.repository';
 import {
@@ -31,6 +38,8 @@ export abstract class CommentServiceUseCase {
 @Injectable()
 export class CommentService extends CommentServiceUseCase {
   constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
     private readonly commentRepo: CommentRepositoryPort,
     private readonly postRepo: PostRepositoryPort,
   ) {
@@ -53,25 +62,73 @@ export class CommentService extends CommentServiceUseCase {
   }
 
   async createComment(body: CreateCommentRequest): Promise<void> {
-    const post = await this.postRepo.existsBy({ id: body.postId });
-    if (!post) {
-      throw new NotFoundException(ErrorMessage.E404_COMMENT_POST_NOT_FOUND);
+    const existPost = await this.postRepo.existsBy({ id: body.postId });
+    if (!existPost) {
+      throw new NotFoundException(
+        ErrorMessage.E404_COMMENT_CREATE_COMMENT_NOT_FOUND_POST,
+      );
     }
-    const { postId, ...other } = body;
-    await this.commentRepo.insertOne(postId, other);
+    await this.commentRepo.insertOne({ ...body, parentId: COMMENT_PARENT_ID });
   }
 
   async getReplies(
     commentId: string,
     query: GetRepliesQuery,
   ): Promise<GetRepliesResponseWithTotalCount> {
-    throw new NotFoundException('미구현 API');
+    const existComment = await this.commentRepo.existsBy({ id: commentId });
+    if (!existComment) {
+      throw new NotFoundException(
+        ErrorMessage.E404_COMMENT_GET_REPLIES_NOT_FOUND_COMMENT,
+      );
+    }
+
+    const { limit, offset } = query;
+    const [comments, totalCount] = await this.commentRepo.findManyWithCount({
+      where: { parentId: commentId },
+      pagination: { limit, offset },
+    });
+
+    return Util.toInstance(GetRepliesResponseWithTotalCount, {
+      results: comments,
+      totalCount,
+    });
   }
 
   async createReply(
     commentId: string,
     body: CreateReplyRequest,
   ): Promise<void> {
-    throw new NotFoundException('미구현 API');
+    const comment = await this.commentRepo.findOneByPK(commentId);
+    if (!comment) {
+      throw new NotFoundException(
+        ErrorMessage.E404_COMMENT_CREATE_REPLY_NOT_FOUND_COMMENT,
+      );
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    const manager = queryRunner.manager;
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const txCommentRepo = this.commentRepo.createTransactionRepo(manager);
+      // 답글 생성, parentId = 댓글 ID
+      await txCommentRepo.insertOne({
+        ...body,
+        postId: comment.postId,
+        parentId: comment.id,
+      });
+      // 댓글 isChild = 1로 변경
+      await txCommentRepo.updateOneByProperty(commentId, {
+        isChild: TRUE_NUMBER,
+      });
+
+      await queryRunner.commitTransaction();
+      return;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
