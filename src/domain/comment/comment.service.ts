@@ -8,6 +8,7 @@ import {
   GetRepliesQuery,
   GetRepliesResponseWithTotalCount,
 } from './dto';
+import { CommentRepositoryPort } from './comment.repository';
 
 export abstract class CommentServiceUseCase {
   abstract getComments(
@@ -27,7 +28,7 @@ export abstract class CommentServiceUseCase {
 
 @Injectable()
 export class CommentService extends CommentServiceUseCase {
-  constructor() {
+  constructor(private readonly commentRepo: CommentRepositoryPort) {
     super();
   }
 
