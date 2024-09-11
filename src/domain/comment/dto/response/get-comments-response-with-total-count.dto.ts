@@ -9,11 +9,7 @@ import { CommentEntity } from '@app/entity';
 
 export class GetCommentsResponse
   extends BaseResponse
-  implements
-    Omit<
-      CommentEntity,
-      'deletedAt' | 'parentId' | 'depth' | 'post' | 'isChild'
-    >
+  implements Pick<CommentEntity, 'content' | 'authorName'>
 {
   @RestApiStringProperty({
     description: '댓글 내용',
