@@ -8,7 +8,7 @@ import { CommentEntity } from '@app/entity';
 
 export class GetRepliesResponse
   extends BaseResponse
-  implements Omit<CommentEntity, 'deletedAt' | 'depth' | 'isChild' | 'post'>
+  implements Pick<CommentEntity, 'content' | 'authorName' | 'parentId'>
 {
   @RestApiStringProperty({
     description: '답글 내용',

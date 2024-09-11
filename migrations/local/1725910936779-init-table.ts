@@ -13,7 +13,6 @@ export class InitTable1725910936779 implements MigrationInterface {
                 content TEXT NOT NULL COMMENT '본문',
                 authorName VARCHAR(100) NOT NULL COMMENT '작성자 이름',
                 password VARCHAR(255) NOT NULL COMMENT '비밀번호',
-                isComment TINYINT NOT NULL DEFAULT 0 COMMENT '댓글 존재 유무',
                 PRIMARY KEY (id),
                 FULLTEXT INDEX ft_index_post_title (title) WITH PARSER ngram,
                 FULLTEXT INDEX ft_index_post_content (content) WITH PARSER ngram

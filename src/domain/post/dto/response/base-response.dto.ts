@@ -1,8 +1,4 @@
-import {
-  BaseResponse,
-  RestApiBooleanProperty,
-  RestApiStringProperty,
-} from '@app/common';
+import { BaseResponse, RestApiStringProperty } from '@app/common';
 import { PostEntity } from '@app/entity';
 
 export class BasePostResponse
@@ -32,10 +28,4 @@ export class BasePostResponse
     minLength: 1,
   })
   authorName: string;
-
-  @RestApiBooleanProperty({
-    description: '댓글 존재 유무',
-    default: false,
-  })
-  isComment: boolean;
 }

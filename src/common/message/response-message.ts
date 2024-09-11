@@ -19,6 +19,15 @@ const PostErrorMessage = {
     '제목과 작성자는 동시에 사용 불가합니다.',
 };
 
+const CommentErrorMessage = {
+  E404_COMMENT_CREATE_COMMENT_NOT_FOUND_POST:
+    '댓글 작성을 요청한 게시물이 존재하지 않습니다.',
+  E404_COMMENT_GET_REPLIES_NOT_FOUND_COMMENT:
+    '댓글이 존재하지 않아 답글을 조회할 수 없습니다.',
+  E404_COMMENT_CREATE_REPLY_NOT_FOUND_COMMENT:
+    '답글 작성을 요청한 댓글이 존재하지 않습니다.',
+};
+
 // E${statusCode}_${도메인}_${변수명}
 export const ErrorMessage = {
   E400_APP_BAD_REQUEST: '요청이 유효성 검사를 통과하지 못했습니다.',
@@ -30,4 +39,5 @@ export const ErrorMessage = {
   E415_APP_UNSUPPORTED_MEDIA_TYPE:
     '지원하지 않는 미디어 타입(mimetypes)입니다.',
   ...PostErrorMessage,
+  ...CommentErrorMessage,
 };

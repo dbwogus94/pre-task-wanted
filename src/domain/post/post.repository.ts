@@ -7,7 +7,7 @@ import { PostEntity } from '@app/entity';
 import { Post, PostEntityMapper } from './domain';
 
 type FindManyOptions = {
-  where?: Pick<PostEntity, 'title' | 'authorName'>;
+  where?: Pick<Partial<PostEntity>, 'title' | 'authorName'>;
   pagination?: FindManyPagination;
 };
 
@@ -44,12 +44,12 @@ export class PostRepository extends PostRepositoryPort {
   ): Promise<[Post[], number]> {
     const { where, pagination } = options;
     const qb = this.createQueryBuilder('P');
-    if (where.title)
+    if (where?.title)
       qb.andWhere('MATCH(P.title) AGAINST (:title IN BOOLEAN MODE)', {
         title: where.title + '*',
       });
 
-    if (where.authorName)
+    if (where?.authorName)
       // Note: 작성자도 fulltext 사용하는 것도 방법이다.
       qb.andWhere('P.authorName LIKE :authorName', {
         authorName: `%${where.authorName}%`, // Index 사용 불가

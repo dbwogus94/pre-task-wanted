@@ -1,5 +1,9 @@
 export const DEFALUT_APP_NAME = 'Nest-API';
 export const USER_ACCESS_TOKEN = 'USER_ACCESS_TOKEN';
+/** 최상위 댓글 parentId = 0 */
+export const COMMENT_PARENT_ID = '0';
+export const TRUE_NUMBER = 1;
+export const FALSE_NUMBER = 0;
 
 /**
  * nestjs의 Global ValidationPipe에 적용할 옵션

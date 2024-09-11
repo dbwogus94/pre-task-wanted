@@ -28,4 +28,8 @@ export class CommentEntity extends BaseEntity {
   @ManyToOne(() => PostEntity, (post) => post.comments)
   @JoinColumn({ name: 'postId' })
   post: PostEntity;
+
+  /* ============= 명시적 FK ============= */
+  @Column('bigint', { comment: '게시물 ID' })
+  postId: string;
 }

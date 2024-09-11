@@ -17,14 +17,33 @@ import {
 import { PostRepositoryPort } from './post.repository';
 
 export abstract class PostServiceUseCase {
+  /**
+   * 게시물 리스트를 조회한다.
+   * - 제목 검색과 작성자 검색을 지원한다.
+   * - 페이징을 지원한다.
+   * @param query
+   */
   abstract getPosts(
     query: GetPostsQuery,
   ): Promise<GetPostsResponseWithTotalCount>;
+  /**
+   * 게시물을 생성하고, 비밀번호를 암호화 하여 수정한다.
+   * @param body
+   * @returns
+   */
   abstract createPost(body: CreatePostRequest): Promise<void>;
   abstract getPost(postId: string): Promise<GetPostResponse>;
+  /**
+   * 게시물이 존재하고, 비밀번호가 일치하면 수정한다.
+   * @param postId
+   * @param body
+   */
   abstract updatePost(postId: string, body: PutPostRequest): Promise<void>;
 
-  /** 삭제되는 게시글, 댓글, 답글 모두 soft-delete 처리한다. */
+  /**
+   * 게시물이 존재하고, 비밀번호가 일치하면 soft-delete한다.
+   * - 게시글에 달린 댓글, 답글도 같이 soft-delete한다.
+   */
   abstract softDeletePost(postId: string, password: string): Promise<void>;
 }
 

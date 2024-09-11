@@ -9,5 +9,6 @@ import { PostRepository, PostRepositoryPort } from './post.repository';
     { provide: PostServiceUseCase, useClass: PostService },
     { provide: PostRepositoryPort, useClass: PostRepository },
   ],
+  exports: [PostRepositoryPort],
 })
 export class PostModule {}
