@@ -2,9 +2,17 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 
 import { BaseRepository } from '@app/common';
-import { NotificationQueueEntity } from '@app/entity';
+import { NotificationQueueEntity, QueueState } from '@app/entity';
 
-export abstract class NotificationQueueRepositoryPort extends BaseRepository<NotificationQueueEntity> {}
+type InsertBody = Pick<
+  NotificationQueueEntity,
+  'domainTypeCode' | 'domainId' | 'userKeywordId'
+>;
+
+export abstract class NotificationQueueRepositoryPort extends BaseRepository<NotificationQueueEntity> {
+  abstract insertOne(body: InsertBody): Promise<string>;
+  abstract insertMany(body: InsertBody[]): Promise<string[]>;
+}
 
 export class NotificationQueueRepository extends NotificationQueueRepositoryPort {
   constructor(
@@ -12,5 +20,16 @@ export class NotificationQueueRepository extends NotificationQueueRepositoryPort
     manager: EntityManager,
   ) {
     super(NotificationQueueEntity, manager);
+  }
+
+  override async insertOne(body: InsertBody): Promise<string> {
+    const { raw } = await this.insert({ ...body, queueState: QueueState.HOLD });
+    return raw.insertId;
+  }
+
+  override async insertMany(body: InsertBody[]): Promise<string[]> {
+    const dataList = body.map((i) => ({ ...i, queueState: QueueState.HOLD }));
+    const { raw } = await this.insert(dataList);
+    return raw.insertId;
   }
 }

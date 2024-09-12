@@ -1,6 +1,15 @@
 import { RestApiIntPropertyOptional } from '../decorator';
 
 export class OffsetPagination {
+  constructor(page: number, pageSize: number) {
+    this.page = page;
+    this.pageSize = pageSize;
+  }
+
+  static of(param: { page: number; pageSize: number }) {
+    return new OffsetPagination(param.page, param.pageSize);
+  }
+
   @RestApiIntPropertyOptional({
     description: '페이지 번호',
     default: 1,

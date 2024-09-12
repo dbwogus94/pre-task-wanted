@@ -22,6 +22,16 @@ export abstract class PostRepositoryPort extends BaseRepository<PostEntity> {
     options?: FindManyOptions,
   ): Promise<[Post[], number]>;
   abstract findOneByPK(postId: string): Promise<Post>;
+
+  /** FullText 검색으로 `title`와 `content`에 `keyword`로 시작하는 posts를 조회 */
+  abstract findManyByKeyword(keyword: string): Promise<Post[]>;
+  /**
+   * postId를 가진 post에 `title`와 `content`에 `keyword`로 시작하는 단어가 포함되는지 확인한다.
+   * @param postId
+   * @param keyword
+   */
+  abstract isIncludeKeyword(postId: string, keyword: string): Promise<boolean>;
+
   abstract insertOne(body: InsertPostBody): Promise<string>;
   abstract updateOne(postId: string, body: UpdatePostBody): Promise<string>;
   abstract updateOneByProperty(
@@ -66,6 +76,32 @@ export class PostRepository extends PostRepositoryPort {
   async findOneByPK(postId: string): Promise<Post> {
     const postEntity = await this.findOneBy({ id: postId });
     return postEntity ? PostEntityMapper.toDomain(postEntity) : null;
+  }
+
+  async findManyByKeyword(keyword: string): Promise<Post[]> {
+    const qb = this.createQueryBuilder('P');
+
+    // FullText 검색으로 `title`와 `content`에 `keyword`로 시작하는 단어가 있는지 조회한다.
+    qb.where('MATCH(P.title, P.content) AGAINST (:keyword IN BOOLEAN MODE)', {
+      keyword: keyword + '*',
+    });
+
+    // 최신 게시물 부터 검색한다.
+    const postEntities = await qb.orderBy('P.id', 'DESC').getMany();
+    return PostEntityMapper.toDomain(postEntities);
+  }
+
+  async isIncludeKeyword(postId: string, keyword: string): Promise<boolean> {
+    const qb = this.createQueryBuilder('P');
+
+    qb.where('P.id = :postId', { postId });
+    // FullText 검색으로 `title`와 `content`에 `keyword`로 시작하는 단어가 있는지 조회한다.
+    qb.andWhere(
+      'MATCH(P.title, P.content) AGAINST (:keyword IN BOOLEAN MODE)',
+      { keyword: keyword + '*' },
+    );
+    const count = await qb.getCount();
+    return count !== 0 ? true : false;
   }
 
   async insertOne(body: InsertPostBody): Promise<string> {

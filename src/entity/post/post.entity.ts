@@ -8,7 +8,11 @@ import { CommentEntity } from './comment.entity';
   fulltext: true,
   parser: 'ngram',
 })
-@Index('ft_index_post_content', ['content'], {
+// @Index('ft_index_post_content', ['content'], {
+//   fulltext: true,
+//   parser: 'ngram',
+// })
+@Index('ft_index_post_title_content', ['title', 'content'], {
   fulltext: true,
   parser: 'ngram',
 })
