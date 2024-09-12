@@ -1,11 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 import { BaseEntity } from '../base.entity';
 import { DomainTypeEntity, QueueStateEntity } from '../code';
 import { DomainType, QueueState } from '../enum';
 
 @Entity('notification_queue')
-@Unique(['domainId', 'domainTypeCode'])
 export class NotificationQueueEntity extends BaseEntity {
   @Column('bigint', { comment: 'domain(게시물, 댓글, 답글) id' })
   domainId: string;
