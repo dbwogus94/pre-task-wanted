@@ -13,7 +13,24 @@ import {
 } from './repository';
 
 export abstract class KeywordServiceUseCase {
+  /**
+   * CreateKeywordQueue를 사용해서 키워드 알림을 만든다.
+   * 1. Hold(대기) 상태의 큐(CreateEventQueue) 조회
+   * 2. 조회된 큐(CreateEventQueue)의 상태를 Progress(진행중)으로 변경
+   * 3. (트랜잭션 시작) 키워드 N개씩 조회
+   * 4. 큐의 값을 토대로 post나 comment에 포함되는 keyword 찾기
+   * 5. (일치하는 keyword가 있다면?) 키워드와 매핑된 등록 키워드 조회
+   * 6. NotificationQueue에 알림 생성
+   * 7. (트랜잭션 종료) 큐 상태를 Success(성공)으로 변경
+   * 8. (트랜잭션 실패) 큐 상태를 Fail(실패)로 변경
+   */
   abstract createKeywordNotifications(): Promise<void>;
+
+  /**
+   * NotificationQueue를 사용해 알림을 전송한다.
+   * - TODO: 현재는 1개의 알림을 전송, 알림 전송 개수 조절 필요
+   */
+  abstract sendNotification(): Promise<void>;
 }
 
 @Injectable()
@@ -109,6 +126,34 @@ export class KeywordService extends KeywordServiceUseCase {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  override async sendNotification(): Promise<void> {
+    const holdQueue = await this.notificationQueueRepo.findOneBy({
+      stateCode: QueueState.HOLD,
+    });
+    if (!holdQueue) return;
+
+    // 큐 상태를 '처리중'으로 변경
+    await this.notificationQueueRepo.updateOne(
+      holdQueue.id,
+      QueueState.PROGRESS,
+    );
+
+    try {
+      // 알림 전송
+      console.log('[알림 전송] - ', holdQueue);
+
+      // 5. 큐 상태를 '성공'으로 변경
+      await this.notificationQueueRepo.updateOne(
+        holdQueue.id,
+        QueueState.SUCCESS,
+      );
+    } catch (error) {
+      // 큐 상태를 '실패'으로 변경
+      await this.notificationQueueRepo.updateOne(holdQueue.id, QueueState.FAIL);
+      throw error;
     }
   }
 }

@@ -7,9 +7,11 @@ import { KeywordServiceUseCase } from './keyword.service';
 @Injectable()
 export class KeywordNotificationSchedule {
   /** 1분 마다 실행 */
-  static readonly CON_TIME = '* * * * * *';
-  // static readonly CON_TIME = '0 */1 * * * *';
-  static readonly JOB_NAME = 'CreateNotificationsByHold';
+  static readonly CON_TIME = '0 */1 * * * *';
+  static readonly JobNames = {
+    CREATE_NOTIFICATIONS: 'CreateNotificationsByHold',
+    SEND_NOTIFICATION: 'SendNotificationsByHold',
+  };
 
   constructor(
     private readonly logger: CustomLoggerService,
@@ -20,14 +22,13 @@ export class KeywordNotificationSchedule {
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS, {
-    name: KeywordNotificationSchedule.JOB_NAME,
+    name: KeywordNotificationSchedule.JobNames.CREATE_NOTIFICATIONS,
   })
   async createNotifications() {
-    this.logger.debug(`[${KeywordNotificationSchedule.JOB_NAME}] start`);
+    const jobName = KeywordNotificationSchedule.JobNames.CREATE_NOTIFICATIONS;
+    this.logger.debug(`[${jobName}] start`);
 
-    const job = this.schedulerRegistry.getCronJob(
-      KeywordNotificationSchedule.JOB_NAME,
-    );
+    const job = this.schedulerRegistry.getCronJob(jobName);
     job.stop();
 
     try {
@@ -35,15 +36,30 @@ export class KeywordNotificationSchedule {
       await this.keywordService.createKeywordNotifications();
     } catch (error) {
       this.logger.error(error as Error);
+    } finally {
+      this.logger.debug(`[${jobName}] end`);
+      job.start();
     }
-    this.logger.debug(`[${KeywordNotificationSchedule.JOB_NAME}] end`);
-
-    job.start();
   }
 
-  // 알림 생성 실패 재시도 처리
+  @Cron(CronExpression.EVERY_5_SECONDS, {
+    name: KeywordNotificationSchedule.JobNames.SEND_NOTIFICATION,
+  })
+  async sendNotification() {
+    const jobName = KeywordNotificationSchedule.JobNames.SEND_NOTIFICATION;
+    this.logger.debug(`[${jobName}] start`);
 
-  // 알림 보내기
+    const job = this.schedulerRegistry.getCronJob(jobName);
+    job.stop();
 
-  // 알림 실패 재시도
+    try {
+      // 키워드 알림 전송
+      await this.keywordService.sendNotification();
+    } catch (error) {
+      this.logger.error(error as Error);
+    } finally {
+      this.logger.debug(`[${jobName}] end`);
+      job.start();
+    }
+  }
 }
