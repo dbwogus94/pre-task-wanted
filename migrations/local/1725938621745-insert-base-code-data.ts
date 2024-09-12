@@ -9,7 +9,8 @@ export class InsertBaseCodeData1725938621745 implements MigrationInterface {
         VALUES
             ('Hold', '대기', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
             ('Fail', '실패', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
-            ('Success', '성공', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null)
+            ('Success', '성공', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
+            ('Progress', '진행중', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null)
         ;
         `);
 
