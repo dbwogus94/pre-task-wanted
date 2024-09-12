@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
-import { CustomLoggerService } from '@app/custom';
-import { QueueState } from '@app/entity';
+import { OffsetPagination } from '@app/common';
+import { DomainType, QueueState } from '@app/entity';
 import { CommentRepositoryPort } from '../comment/comment.repository';
 import { PostRepositoryPort } from '../post/post.repository';
 import {
@@ -21,7 +21,6 @@ export class KeywordService extends KeywordServiceUseCase {
   constructor(
     @InjectDataSource()
     private readonly dataSource: DataSource,
-    private readonly logger: CustomLoggerService,
     private readonly createEventQueueRepo: CreateEventQueueRepositoryPort,
     private readonly notificationQueueRepo: NotificationQueueRepositoryPort,
     private readonly postRepo: PostRepositoryPort,
@@ -29,7 +28,6 @@ export class KeywordService extends KeywordServiceUseCase {
     private readonly keywordRepo: KeywordRepositoryPort,
   ) {
     super();
-    this.logger.setTarget(this.constructor.name);
   }
 
   /**
@@ -37,13 +35,16 @@ export class KeywordService extends KeywordServiceUseCase {
    * @returns
    */
   override async createKeywordNotifications(): Promise<void> {
-    const holdCreateEventQueue = await this.createEventQueueRepo.findOneByState(
-      QueueState.HOLD,
-    );
+    const holdQueue = await this.createEventQueueRepo.findOneBy({
+      queueState: QueueState.HOLD,
+    });
+    if (!holdQueue) return;
 
-    if (!holdCreateEventQueue) {
-      return;
-    }
+    // 큐 상태를 '처리중'으로 변경
+    await this.createEventQueueRepo.updateOne(
+      holdQueue.id,
+      QueueState.PROGRESS,
+    );
 
     const queryRunner = this.dataSource.createQueryRunner();
     const manager = queryRunner.manager;
@@ -58,26 +59,41 @@ export class KeywordService extends KeywordServiceUseCase {
       const txCommentRepo = this.commentRepo.createTransactionRepo(manager);
       const txKeywordRepo = this.keywordRepo.createTransactionRepo(manager);
 
-      // 1. 상태를 처리중으로 변경
+      // 1. 키워드 N개씩 조회
+      const pagination = new OffsetPagination({ page: 1, pageSize: 10 });
+      const keywords = await txKeywordRepo.findMany({
+        pagination: { limit: pagination.limit, offset: pagination.offset },
+      });
 
-      // 2. 키워드 N개씩 조회
+      // 2. 큐의 값을 토대로 post나 comment에 포함되는 keyword 찾기
+      const { domainId, domainTypeCode } = holdQueue;
+      const keywordIdAndIncludeList = await Promise.all(
+        keywords.map(async ({ id, name: keywordName }) => {
+          const isInclude =
+            domainTypeCode === DomainType.POST
+              ? await txPostRepo.isIncludeKeyword(domainId, keywordName)
+              : await txCommentRepo.isIncludeKeyword(domainId, keywordName);
+          return { keywordId: id, isInclude };
+        }),
+      );
 
-      // 3. 조회된 키워드를 사용해 게시물 or 댓글 or 답글 FULLTAXT 조회
-      // - createEventQueue의 정보로 검색 대상 선정
-      // findOneKeywords
+      const includeKeywords = keywordIdAndIncludeList.filter(
+        ({ isInclude }) => isInclude,
+      );
+      if (includeKeywords.length > 0) {
+        // 3. 키워드와 매핑된 등록 키워드 조회
+        // 5. notificationQueue에 알림 생성
+      }
 
-      // 4. 존재하는 키워드와 매핑된 등록 키워드 조회
-
-      // 5. notificationQueue에 알림 생성
+      // 큐 상태를 '성공'으로 변경
+      await txCreateEventQueueRepo.updateOne(holdQueue.id, QueueState.SUCCESS);
 
       await queryRunner.commitTransaction();
       return;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      await this.createEventQueueRepo.updateOne(
-        holdCreateEventQueue.id,
-        QueueState.FAIL,
-      );
+      // 큐 상태를 '실패'으로 변경
+      await this.createEventQueueRepo.updateOne(holdQueue.id, QueueState.FAIL);
       throw error;
     } finally {
       await queryRunner.release();
