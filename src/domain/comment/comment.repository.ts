@@ -21,6 +21,18 @@ export abstract class CommentRepositoryPort extends BaseRepository<CommentEntity
   ): Promise<[Comment[], number]>;
   abstract findOneByPK(commentId: string): Promise<Comment>;
 
+  /** FullText 검색으로 `content`에 `keyword`로 시작하는 단어를 가진 comments를 조회. */
+  abstract findManyByKeyword(keyword: string): Promise<Comment[]>;
+  /**
+   * commentId를 가진 comment의 content`에 `keyword`로 시작하는 단어가 포함되는지 확인한다.
+   * @param commentId
+   * @param keyword
+   */
+  abstract isIncludeKeyword(
+    commentId: string,
+    keyword: string,
+  ): Promise<boolean>;
+
   abstract insertOne(body: InsertCommentBody): Promise<string>;
   abstract updateOneByProperty(
     commentId: string,
@@ -62,6 +74,31 @@ export class CommentRepository extends CommentRepositoryPort {
   async findOneByPK(commentId: string): Promise<Comment> {
     const commentEntity = await this.findOneBy({ id: commentId });
     return commentEntity ? CommentEntityMapper.toDomain(commentEntity) : null;
+  }
+
+  async findManyByKeyword(keyword: string): Promise<Comment[]> {
+    const qb = this.createQueryBuilder('C');
+
+    // FullText 검색으로 `title`와 `content`에 `keyword`로 시작하는 단어가 있는지 조회한다.
+    qb.where('MATCH(C.content) AGAINST (:keyword IN BOOLEAN MODE)', {
+      keyword: keyword + '*',
+    });
+
+    // 최신 게시물 부터 검색한다.
+    const commentEntity = await qb.orderBy('C.id', 'DESC').getMany();
+    return CommentEntityMapper.toDomain(commentEntity);
+  }
+
+  async isIncludeKeyword(commentId: string, keyword: string): Promise<boolean> {
+    const qb = this.createQueryBuilder('C');
+
+    qb.where('C.id = :commentId', { commentId });
+    // FullText 검색으로 `title`와 `content`에 `keyword`로 시작하는 단어가 있는지 조회한다.
+    qb.where('MATCH(C.content) AGAINST (:keyword IN BOOLEAN MODE)', {
+      keyword: keyword + '*',
+    });
+    const count = await qb.getCount();
+    return count !== 0 ? true : false;
   }
 
   async insertOne(body: InsertCommentBody): Promise<string> {
