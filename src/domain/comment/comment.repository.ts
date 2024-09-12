@@ -94,7 +94,7 @@ export class CommentRepository extends CommentRepositoryPort {
 
     qb.where('C.id = :commentId', { commentId });
     // FullText 검색으로 `title`와 `content`에 `keyword`로 시작하는 단어가 있는지 조회한다.
-    qb.where('MATCH(C.content) AGAINST (:keyword IN BOOLEAN MODE)', {
+    qb.andWhere('MATCH(C.content) AGAINST (:keyword IN BOOLEAN MODE)', {
       keyword: keyword + '*',
     });
     const count = await qb.getCount();
