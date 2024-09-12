@@ -132,9 +132,8 @@ export class InitTable1725910936779 implements MigrationInterface {
                 stateCode varchar(100) NOT NULL COMMENT 'queue 상태 CODE',
                 domainId BIGINT NOT NULL COMMENT 'domain(게시물, 댓글, 답글) id',
                 domainTypeCode varchar(100) NOT NULL COMMENT 'domain 타입 CODE',
-                userKeywordId BIGINT NOT NULL,
+                userKeywordId BIGINT NOT NULL COMMENT 'user_keyword id, FK 사용 x',
                 PRIMARY KEY (id),
-                CONSTRAINT fk_notification_queue_user_keyword FOREIGN KEY (userKeywordId) REFERENCES user_keyword (id),
                 CONSTRAINT fk_notification_queue_domain_type FOREIGN KEY (domainTypeCode) REFERENCES domain_type (code),
                 CONSTRAINT fk_notification_queue_state FOREIGN KEY (stateCode) REFERENCES queue_state (code),
                 UNIQUE KEY (domainId, domainTypeCode)
