@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 
 import { CustomLoggerService } from '@app/custom';
 import { KeywordServiceUseCase } from './keyword.service';
@@ -7,7 +7,8 @@ import { KeywordServiceUseCase } from './keyword.service';
 @Injectable()
 export class KeywordNotificationSchedule {
   /** 1분 마다 실행 */
-  static readonly CON_TIME = '0 */1 * * * *';
+  static readonly CON_TIME = '* * * * * *';
+  // static readonly CON_TIME = '0 */1 * * * *';
   static readonly JOB_NAME = 'CreateNotificationsByHold';
 
   constructor(
@@ -18,18 +19,20 @@ export class KeywordNotificationSchedule {
     this.logger.setTarget(this.constructor.name);
   }
 
-  @Cron(KeywordNotificationSchedule.CON_TIME, {
+  @Cron(CronExpression.EVERY_10_SECONDS, {
     name: KeywordNotificationSchedule.JOB_NAME,
   })
-  async createNotificationsByHold() {
+  async createNotifications() {
     this.logger.debug(`[${KeywordNotificationSchedule.JOB_NAME}] start`);
 
     const job = this.schedulerRegistry.getCronJob(
       KeywordNotificationSchedule.JOB_NAME,
     );
     job.stop();
-    await this.keywordService.createKeywordNotifications();
+
     try {
+      // 키워드 알림 생성
+      await this.keywordService.createKeywordNotifications();
     } catch (error) {
       this.logger.error(error as Error);
     }

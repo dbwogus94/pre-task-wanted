@@ -1,9 +1,13 @@
 import { RestApiIntPropertyOptional } from '../decorator';
 
 export class OffsetPagination {
-  constructor(param: { page: number; pageSize: number }) {
-    this.page = param.page;
-    this.pageSize = param.pageSize;
+  constructor(page: number, pageSize: number) {
+    this.page = page;
+    this.pageSize = pageSize;
+  }
+
+  static of(param: { page: number; pageSize: number }) {
+    return new OffsetPagination(param.page, param.pageSize);
   }
 
   @RestApiIntPropertyOptional({

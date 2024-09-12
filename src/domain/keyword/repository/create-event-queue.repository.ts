@@ -20,7 +20,10 @@ export class CreateEventQueueRepository extends CreateEventQueueRepositoryPort {
   }
 
   override async insertOne(body: InsertBody): Promise<string> {
-    const { raw } = await this.insert({ ...body, queueState: QueueState.HOLD });
+    const { raw } = await this.insert({
+      ...body,
+      stateCode: QueueState.HOLD,
+    });
     return raw.insertId;
   }
 
@@ -28,7 +31,7 @@ export class CreateEventQueueRepository extends CreateEventQueueRepositoryPort {
     queueId: string,
     state: QueueState,
   ): Promise<string> {
-    await this.update(queueId, { queueState: state });
+    await this.update(queueId, { stateCode: state });
     return queueId;
   }
 }

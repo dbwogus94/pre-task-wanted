@@ -36,7 +36,7 @@ export class KeywordService extends KeywordServiceUseCase {
    */
   override async createKeywordNotifications(): Promise<void> {
     const holdQueue = await this.createEventQueueRepo.findOneBy({
-      queueState: QueueState.HOLD,
+      stateCode: QueueState.HOLD,
     });
     if (!holdQueue) return;
 
@@ -60,13 +60,15 @@ export class KeywordService extends KeywordServiceUseCase {
       const txKeywordRepo = this.keywordRepo.createTransactionRepo(manager);
 
       // 1. 키워드 N개씩 조회
-      const pagination = new OffsetPagination({ page: 1, pageSize: 10 });
+      // TODO: 키워드 로직 페이징 적용 필요
+      const pagination = OffsetPagination.of({ page: 1, pageSize: 1000 });
       const keywords = await txKeywordRepo.findMany({
         pagination: { limit: pagination.limit, offset: pagination.offset },
       });
 
       // 2. 큐의 값을 토대로 post나 comment에 포함되는 keyword 찾기
       const { domainId, domainTypeCode } = holdQueue;
+      // Note: 트랜잭션인 경우 하나의 커넥션을 사용하기 때문에 병렬 처리는 되지 않는다.
       const keywordIdAndIncludeList = await Promise.all(
         keywords.map(async ({ id, name: keywordName }) => {
           const isInclude =
@@ -76,20 +78,30 @@ export class KeywordService extends KeywordServiceUseCase {
           return { keywordId: id, isInclude };
         }),
       );
-
       const includeKeywords = keywordIdAndIncludeList.filter(
         ({ isInclude }) => isInclude,
       );
+
+      // 키워드가 포함된 게시물(댓글, 답글)이 있다면?
       if (includeKeywords.length > 0) {
+        const keywordIds = includeKeywords.map((i) => i.keywordId);
         // 3. 키워드와 매핑된 등록 키워드 조회
-        // 5. notificationQueue에 알림 생성
+        const keywordAssociations =
+          await txKeywordRepo.findManyKeywordAssociationByKeywordIds(
+            keywordIds,
+          );
+
+        // 4. notificationQueue에 알림 생성
+        const notificationQueueRecords = keywordAssociations.map(
+          ({ userKeywordId }) => ({ domainId, domainTypeCode, userKeywordId }),
+        );
+        await txNotificationQueueRepo.insertMany(notificationQueueRecords);
       }
 
-      // 큐 상태를 '성공'으로 변경
+      // 5. 큐 상태를 '성공'으로 변경
       await txCreateEventQueueRepo.updateOne(holdQueue.id, QueueState.SUCCESS);
 
       await queryRunner.commitTransaction();
-      return;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       // 큐 상태를 '실패'으로 변경
